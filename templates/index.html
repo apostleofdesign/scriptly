@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scriptly</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color: #222; }
+    h1 { font-size: 26px; margin-bottom: 4px; }
+    .subheader { color: #666; font-size: 15px; margin-bottom: 30px; }
+    input[type=file] { margin-bottom: 12px; }
+    button { background: #d97757; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    button:disabled { background: #ccc; }
+    #status { color: #666; font-size: 14px; margin-top: 10px; }
+    textarea { width: 100%; min-height: 180px; padding: 10px; font-size: 14px; box-sizing: border-box; margin-top: 12px; }
+    .card { background: #f7f5f2; border-radius: 10px; padding: 24px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Reel to Real</h1>
+  <p class="subheader">Turn any video into a clean, ready-to-use transcript. Free, no sign-up.</p>
+
+  <div class="card">
+    <input type="file" id="videoFile" accept="video/*">
+    <br>
+    <button onclick="uploadVideo()" id="uploadBtn">Transcribe Video</button>
+    <div id="status"></div>
+    <textarea id="transcript" placeholder="Your transcript will appear here..."></textarea>
+    <br><br>
+    <button onclick="copyText()">Copy Transcript</button>
+  </div>
+
+<script>
+async function uploadVideo() {
+  const fileInput = document.getElementById('videoFile');
+  if (!fileInput.files.length) { alert('Choose a video first'); return; }
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+  document.getElementById('status').innerText = "Transcribing... this can take a few minutes.";
+
+  const formData = new FormData();
+  formData.append('video', fileInput.files[0]);
+
+  try {
+    const res = await fetch('/transcribe', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.error) {
+      document.getElementById('status').innerText = "Error: " + data.error;
+    } else {
+      document.getElementById('transcript').value = data.transcript;
+      document.getElementById('status').innerText = "Done!";
+    }
+  } catch (err) {
+    document.getElementById('status').innerText = "Something went wrong. Try again.";
+  }
+  btn.disabled = false;
+}
+
+function copyText() {
+  const el = document.getElementById('transcript');
+  el.select();
+  document.execCommand('copy');
+}
+</script>
+
+</body>
+</html>
