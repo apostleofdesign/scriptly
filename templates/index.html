@@ -1,41 +1,496 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Scriptly</title>
-  <style>
-    body { font-family: -apple-system, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color: #222; }
-    h1 { font-size: 26px; margin-bottom: 4px; }
-    .subheader { color: #666; font-size: 15px; margin-bottom: 30px; }
-    input[type=file] { margin-bottom: 12px; }
-    button { background: #d97757; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-    button:disabled { background: #ccc; }
-    #status { color: #666; font-size: 14px; margin-top: 10px; }
-    textarea { width: 100%; min-height: 180px; padding: 10px; font-size: 14px; box-sizing: border-box; margin-top: 12px; }
-    .card { background: #f7f5f2; border-radius: 10px; padding: 24px; margin-top: 20px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scriptly — Reel to Real</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14120F;
+    --surface: #1D1A16;
+    --surface-2: #242019;
+    --border: rgba(245,241,228,0.09);
+    --text: #F2EDE4;
+    --text-muted: #9C948A;
+    --amber: #E8A33D;
+    --amber-dim: rgba(232,163,61,0.15);
+    --teal: #3ECDB0;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .mono {
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 12px;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 0;
+  }
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .logo span { color: var(--amber); }
+  nav .mono { color: var(--text-muted); }
+
+  /* HERO */
+  .hero {
+    padding: 60px 0 100px;
+    position: relative;
+    overflow: hidden;
+  }
+  .eyebrow {
+    color: var(--teal);
+    margin-bottom: 18px;
+    display: inline-block;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(48px, 8vw, 84px);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    margin: 0 0 22px;
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--amber);
+  }
+  .subhead {
+    font-size: 19px;
+    color: var(--text-muted);
+    max-width: 520px;
+    margin: 0 0 46px;
+  }
+
+  /* WAVEFORM SIGNATURE ELEMENT */
+  .waveform {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 40px;
+    margin-bottom: 6px;
+  }
+  .waveform span {
+    width: 3px;
+    background: var(--amber);
+    border-radius: 2px;
+    animation: wave 1.6s ease-in-out infinite;
+    opacity: 0.85;
+  }
+  .waveform.quiet span { background: var(--text-muted); opacity: 0.35; animation: none; }
+  @keyframes wave {
+    0%, 100% { height: 20%; }
+    50% { height: 100%; }
+  }
+
+  /* TOOL CARD */
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    max-width: 640px;
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,0.6);
+  }
+  .drop-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    padding: 36px 24px;
+    text-align: center;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    cursor: pointer;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--amber);
+    background: var(--amber-dim);
+  }
+  .drop-zone input { display: none; }
+  .drop-zone .dz-label {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .drop-zone .dz-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .file-chip {
+    display: none;
+    margin-top: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--teal);
+    background: rgba(62,205,176,0.1);
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+
+  button.primary {
+    width: 100%;
+    margin-top: 18px;
+    background: var(--amber);
+    color: #1A1712;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  button.primary:hover:not(:disabled) { transform: translateY(-1px); }
+  button.primary:disabled {
+    background: var(--surface-2);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  #status {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    min-height: 18px;
+  }
+
+  .result-block { display: none; margin-top: 22px; }
+  .result-block textarea {
+    width: 100%;
+    min-height: 160px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+  button.secondary {
+    margin-top: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  button.secondary:hover { border-color: var(--teal); color: var(--teal); }
+
+  /* SECTIONS */
+  section { padding: 90px 0; border-top: 1px solid var(--border); }
+  .section-head { margin-bottom: 56px; max-width: 560px; }
+  .section-head .eyebrow { color: var(--amber); }
+  .section-head h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(32px, 4vw, 44px);
+    letter-spacing: -0.01em;
+    margin: 8px 0 0;
+  }
+
+  /* STEPS */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .step { border-top: 1px solid var(--border); padding-top: 22px; }
+  .step .num {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--teal);
+    font-size: 13px;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .step h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 21px;
+    margin: 0 0 10px;
+  }
+  .step p { color: var(--text-muted); font-size: 14.5px; margin: 0; }
+
+  /* SHOWCASE */
+  .showcase {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .showcase-side { display: flex; flex-direction: column; gap: 14px; }
+  .showcase-side .tag { color: var(--text-muted); }
+  .clip-block {
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+  }
+  .transcript-lines { display: flex; flex-direction: column; gap: 10px; }
+  .transcript-lines .line {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+  }
+  .transcript-lines .tc { color: var(--teal); flex-shrink: 0; }
+  .transcript-lines .txt { color: var(--text-muted); }
+  .arrow-divider {
+    text-align: center;
+    color: var(--amber);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 20px;
+  }
+
+  /* TESTIMONIALS */
+  .testimonials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .t-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+  }
+  .t-card p.quote {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.5;
+    margin: 0 0 18px;
+  }
+  .t-card .role { color: var(--text-muted); }
+  .t-card .role .amber-dot { color: var(--amber); margin-right: 6px; }
+
+  /* FOOTER CTA */
+  .cta-final {
+    text-align: center;
+    padding: 90px 0 70px;
+  }
+  .cta-final h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(30px, 4.5vw, 46px);
+    max-width: 640px;
+    margin: 0 auto 30px;
+  }
+  .cta-final .waveform { justify-content: center; margin: 0 auto 24px; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 0 40px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  @media (max-width: 760px) {
+    .steps, .testimonials { grid-template-columns: 1fr; }
+    .showcase { grid-template-columns: 1fr; padding: 28px; }
+    .tool-card { padding: 24px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .waveform span { animation: none; height: 60%; }
+  }
+</style>
 </head>
 <body>
 
-  <h1>Reel to Real</h1>
-  <p class="subheader">Turn any video into a clean, ready-to-use transcript. Free, no sign-up.</p>
+<div class="wrap">
+  <nav>
+    <div class="logo">Script<span>ly</span></div>
+    <div class="mono">Free · No sign-up</div>
+  </nav>
+</div>
 
-  <div class="card">
-    <input type="file" id="videoFile" accept="video/*">
-    <br>
-    <button onclick="uploadVideo()" id="uploadBtn">Transcribe Video</button>
+<div class="wrap hero">
+  <span class="eyebrow mono">Video → Text, in minutes</span>
+  <h1>Reel to <em>Real</em></h1>
+  <p class="subhead">Turn any video into a clean, ready-to-use transcript. Free, no sign-up.</p>
+
+  <div class="tool-card">
+    <div class="waveform" id="waveform">
+      <span style="animation-delay:0s"></span><span style="animation-delay:0.1s"></span>
+      <span style="animation-delay:0.2s"></span><span style="animation-delay:0.05s"></span>
+      <span style="animation-delay:0.3s"></span><span style="animation-delay:0.15s"></span>
+      <span style="animation-delay:0.25s"></span><span style="animation-delay:0.4s"></span>
+    </div>
+
+    <label class="drop-zone" id="dropZone">
+      <input type="file" id="videoFile" accept="video/*">
+      <div class="dz-label">Drop your video here, or click to browse</div>
+      <div class="dz-sub">MP4, MOV, or any common format</div>
+      <div class="file-chip" id="fileChip"></div>
+    </label>
+
+    <button class="primary" id="uploadBtn" onclick="uploadVideo()">Transcribe video</button>
     <div id="status"></div>
-    <textarea id="transcript" placeholder="Your transcript will appear here..."></textarea>
-    <br><br>
-    <button onclick="copyText()">Copy Transcript</button>
+
+    <div class="result-block" id="resultBlock">
+      <textarea id="transcript" readonly></textarea>
+      <button class="secondary" onclick="copyText()">Copy transcript</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <section>
+    <div class="section-head">
+      <span class="eyebrow mono">How it works</span>
+      <h2>Three steps. No editing software required.</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="num mono">01</span>
+        <h3>Drop your footage</h3>
+        <p>Raw interviews, event recordings, talking-head clips — any video, no formatting or cleanup needed first.</p>
+      </div>
+      <div class="step">
+        <span class="num mono">02</span>
+        <h3>We transcribe it</h3>
+        <p>Runs on real speech-recognition, right in your browser tab — usually done in a couple of minutes.</p>
+      </div>
+      <div class="step">
+        <span class="num mono">03</span>
+        <h3>Copy, cut, create</h3>
+        <p>Clean text lands ready for captions, blog posts, show notes, or your next round of social content.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="eyebrow mono">See it in action</span>
+      <h2>Footage in. Ready text out.</h2>
+    </div>
+    <div class="showcase">
+      <div class="showcase-side">
+        <span class="tag mono">Before</span>
+        <div class="clip-block">
+          <div class="waveform quiet">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+      <div class="showcase-side">
+        <span class="tag mono">After</span>
+        <div class="transcript-lines">
+          <div class="line"><span class="tc">00:00:02</span><span class="txt">So the thing nobody tells you about launching&nbsp;—</span></div>
+          <div class="line"><span class="tc">00:00:07</span><span class="txt">is that the hardest part isn't the idea, it's the follow-through.</span></div>
+          <div class="line"><span class="tc">00:00:14</span><span class="txt">We shipped the first version in six days.</span></div>
+          <div class="line"><span class="tc">00:00:19</span><span class="txt">And honestly, that changed how our whole team worked.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="eyebrow mono">Built for creators</span>
+      <h2>The bottleneck was never the footage.</h2>
+    </div>
+    <div class="testimonials">
+      <div class="t-card">
+        <p class="quote">"I had forty interviews sitting in a drive doing nothing. Now they're actually turning into posts."</p>
+        <div class="role"><span class="amber-dot">—</span>Documentary filmmaker</div>
+      </div>
+      <div class="t-card">
+        <p class="quote">"Cut my show-notes time down to almost nothing. I just paste and go."</p>
+        <div class="role"><span class="amber-dot">—</span>Podcast host</div>
+      </div>
+      <div class="t-card">
+        <p class="quote">"Every founder interview becomes three LinkedIn posts now instead of one video nobody reads the caption of."</p>
+        <div class="role"><span class="amber-dot">—</span>DevRel / content lead</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-final">
+    <div class="waveform" style="justify-content:center;">
+      <span style="animation-delay:0s"></span><span style="animation-delay:0.1s"></span>
+      <span style="animation-delay:0.2s"></span><span style="animation-delay:0.05s"></span>
+      <span style="animation-delay:0.3s"></span>
+    </div>
+    <h2>Your next post is already inside your last upload.</h2>
+    <button class="primary" style="width:auto; padding:15px 32px;" onclick="document.querySelector('.tool-card').scrollIntoView({behavior:'smooth'})">Try it free</button>
   </div>
 
+  <footer>
+    <span>Scriptly</span>
+    <span>Reel to Real</span>
+  </footer>
+</div>
+
 <script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('videoFile');
+const fileChip = document.getElementById('fileChip');
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) {
+    fileChip.style.display = 'block';
+    fileChip.innerText = fileInput.files[0].name;
+  }
+});
+
+['dragover'].forEach(evt => {
+  dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+});
+['dragleave', 'drop'].forEach(evt => {
+  dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files.length) {
+    fileInput.files = e.dataTransfer.files;
+    fileChip.style.display = 'block';
+    fileChip.innerText = e.dataTransfer.files[0].name;
+  }
+});
+
 async function uploadVideo() {
-  const fileInput = document.getElementById('videoFile');
   if (!fileInput.files.length) { alert('Choose a video first'); return; }
   const btn = document.getElementById('uploadBtn');
+  const status = document.getElementById('status');
   btn.disabled = true;
-  document.getElementById('status').innerText = "Transcribing... this can take a few minutes.";
+  status.innerText = 'Transcribing… this can take a few minutes on longer clips.';
 
   const formData = new FormData();
   formData.append('video', fileInput.files[0]);
@@ -44,13 +499,14 @@ async function uploadVideo() {
     const res = await fetch('/transcribe', { method: 'POST', body: formData });
     const data = await res.json();
     if (data.error) {
-      document.getElementById('status').innerText = "Error: " + data.error;
+      status.innerText = 'Error: ' + data.error;
     } else {
       document.getElementById('transcript').value = data.transcript;
-      document.getElementById('status').innerText = "Done!";
+      document.getElementById('resultBlock').style.display = 'block';
+      status.innerText = 'Done — transcript ready below.';
     }
   } catch (err) {
-    document.getElementById('status').innerText = "Something went wrong. Try again.";
+    status.innerText = 'Something went wrong. Try a shorter clip or try again.';
   }
   btn.disabled = false;
 }
